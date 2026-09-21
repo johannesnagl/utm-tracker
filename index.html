@@ -86,6 +86,34 @@
         mediumEl.value = medium;
       }
 
+      function applyQueryParams() {
+        var params = new URLSearchParams(window.location.search);
+        var prefilled = false;
+
+        function apply(el, names) {
+          for (var i = 0; i < names.length; i++) {
+            var value = params.get(names[i]);
+            if (value !== null) {
+              el.value = value.trim();
+              prefilled = true;
+              return true;
+            }
+          }
+          return false;
+        }
+
+        var sourceSet = apply(sourceEl, ["utm_source", "source"]);
+        var mediumSet = apply(mediumEl, ["utm_medium", "medium"]);
+        apply(campaignEl, ["utm_campaign", "campaign"]);
+        var urlSet = apply(urlEl, ["url", "link"]);
+
+        if (sourceSet || mediumSet) saveSettings();
+        if (urlSet && !urlEl.value) urlSet = false;
+        if (urlSet) campaignEl.focus();
+
+        return prefilled;
+      }
+
       function saveSettings() {
         localStorage.setItem("utm_source", sourceEl.value.trim());
         localStorage.setItem("utm_medium", mediumEl.value.trim());
@@ -155,6 +183,7 @@
       });
 
       loadSettings();
+      if (applyQueryParams()) buildUrl();
     })();
   </script>
 </body>
